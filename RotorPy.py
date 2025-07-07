@@ -1,5 +1,5 @@
 #Importations
-import math 
+from math import sqrt
 
 #Définition des paramètres
 T = 100 #Poussée (N)
@@ -20,7 +20,6 @@ def c(r, omega): #c corde de l'élément de pale (mm), on définit sa loi de var
 
 
 #Grandeur moyenne
-def Vi_moy(T, R, rho):
-    return sqrt(T/(2*rho*pi*R**2))
+Vi_moy = sqrt(T/(2*rho*pi*R**2))
+print(Vi_moy)
 
-print(Vi_moy(T, R, rho))
