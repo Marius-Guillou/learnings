@@ -2,6 +2,7 @@
 from math import sqrt
 from math import cos
 from math import acos
+from math import sin
 
 #Définition des paramètres
 T = 100 #Poussée (N)
@@ -23,10 +24,16 @@ def Cz(alpha): #Cz en fonction de alpha, à partir de la polaire du profil
 
 #Elément de pale
 def Poussee_elmt(r):
-    Beta = acos(Omega*r/sqrt((Omega*r)**2 + Vi_moy*2)
-    alpha = Theta - Beta
-    dF = 0.5*rho*c(r)*(Vi_moy**2 + (Omega*r)**2)*Cz(alpha)*cos(Beta) #Poussée élémentaire
+    Beta = acos(Omega*r/sqrt((Omega*r)**2 + Vi_moy*2)) #Angle d'arrivée du flux par rapport au plan de rotation
+    alpha = Theta - Beta #Angle d'attaque
+    dF = 0.5*rho*c(r)*(Vi_moy**2 + (Omega*r)**2)*Cz(alpha)*sin(Beta) #Poussée élémentaire
     return dF 
+
+def Trainee_elmt(r):
+    Beta = acos(Omega*r/sqrt((Omega*r)**2 + Vi_moy*2)) #Angle d'arrivée du flux par rapport au plan de rotation
+    alpha = Theta - Beta #Angle d'attaque
+    dT = 0.5*rho*c(r)*(Vi_moy**2 + (Omega*r)**2)*Cz(alpha)*cos(Beta) #Poussée élémentaire
+    return dT 
 
 #Grandeur moyenne
 Vi_moy = sqrt(T/(2*rho*pi*R**2)) #Vitesse induite moyenne (m/s)
