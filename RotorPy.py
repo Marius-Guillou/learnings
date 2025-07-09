@@ -109,4 +109,21 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-print(F_totale, C_total)
+print(F_totale, C_total, Vi_moy, P_moy)
+
+#effet moment
+V_avan = 15
+x1 = np.linspace(0.01, R_val, 500)
+y1 = Poussee_elmt(x, R_val, Omega_val, Vi_moy + V_avan)
+z1 = Poussee_elmt(x, R_val, Omega_val, Vi_moy - V_avan)
+
+plt.figure(figsize=(10, 6))
+plt.plot(x1, y1, label="Poussée élémentaire pale avançante", linewidth=2)
+plt.plot(x1, z1, label="Poussée élémentaire pale reculante", linestyle='--', linewidth=2)
+plt.title("Distribution de la poussée sur la pale avançante et reculante")
+plt.xlabel("Rayon r (m)")
+plt.ylabel("Force élémentaire (N/m)")
+plt.grid(True, linestyle=':')
+plt.legend()
+plt.tight_layout()
+plt.show()
