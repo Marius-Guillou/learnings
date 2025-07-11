@@ -36,28 +36,28 @@ def Cz(alpha):  # Cz réaliste pour NACA 0012
     return np.clip(Cz_lin, -Cz_max, Cz_max)
 
 # Élément de pale
-def Poussee_elmt(r, R, Omega, Vi_moy):
-    Beta = np.arccos(Omega * r / np.sqrt((Omega * r)**2 + Vi_moy**2))
+def Poussee_elmt(r, R, Omega, Vi):
+    Beta = np.arccos(Omega * r / np.sqrt((Omega * r)**2 + Vi**2))
     alpha = Theta(r, R) - Beta
-    dF = 0.5 * rho * c(r, R) * (Vi_moy**2 + (Omega * r)**2) * Cz(alpha) * np.cos(Beta)
+    dF = 0.5 * rho * c(r, R) * (Vi**2 + (Omega * r)**2) * Cz(alpha) * np.cos(Beta)
     return dF
 
-def Trainee_elmt(r, R, Omega, Vi_moy):
-    Beta = np.arccos(Omega * r / np.sqrt((Omega * r)**2 + Vi_moy**2))
+def Trainee_elmt(r, R, Omega, Vi):
+    Beta = np.arccos(Omega * r / np.sqrt((Omega * r)**2 + Vi**2))
     alpha = Theta(r, R) - Beta
-    dT = 0.5 * rho * c(r, R) * (Vi_moy**2 + (Omega * r)**2) * Cz(alpha) * np.sin(Beta)
+    dT = 0.5 * rho * c(r, R) * (Vi**2 + (Omega * r)**2) * Cz(alpha) * np.sin(Beta)
     return dT
 
 # Intégration
-def calc_poussee_totale(R, Omega, Vi_moy):
+def calc_poussee_totale(R, Omega, Vi):
     r_vals = np.linspace(0.01, R, 500)
-    dF_vals = Poussee_elmt(r_vals, R, Omega, Vi_moy)
+    dF_vals = Poussee_elmt(r_vals, R, Omega, Vi)
     F_par_pale = simpson(dF_vals, r_vals)
     return Nb * F_par_pale
 
-def calc_couple_total(R, Omega, Vi_moy):
+def calc_couple_total(R, Omega, Vi):
     r_vals = np.linspace(0.01, R, 500)
-    dT_vals = Trainee_elmt(r_vals, R, Omega, Vi_moy)
+    dT_vals = Trainee_elmt(r_vals, R, Omega, Vi)
     dC_vals = r_vals * dT_vals
     C_par_pale = simpson(dC_vals, r_vals)
     return Nb * C_par_pale
@@ -109,21 +109,7 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-print(F_totale, C_total, Vi_moy, P_moy)
+print("Poussée totale =", F_totale,"N", "Couple total =", C_total, "N.m", "vitesse induite moyenne et Puissance nécessaire =", Vi_moy, P_moy)
 
-#effet moment
-V_avan = 15
-x1 = np.linspace(0.01, R_val, 500)
-y1 = Poussee_elmt(x, R_val, Omega_val, Vi_moy + V_avan)
-z1 = Poussee_elmt(x, R_val, Omega_val, Vi_moy - V_avan)
-
-plt.figure(figsize=(10, 6))
-plt.plot(x1, y1, label="Poussée élémentaire pale avançante", linewidth=2)
-plt.plot(x1, z1, label="Poussée élémentaire pale reculante", linestyle='--', linewidth=2)
-plt.title("Distribution de la poussée sur la pale avançante et reculante")
-plt.xlabel("Rayon r (m)")
-plt.ylabel("Force élémentaire (N/m)")
-plt.grid(True, linestyle=':')
-plt.legend()
-plt.tight_layout()
-plt.show()
+#Dissymétrie de poussée en avancement
+V_avan = 20
