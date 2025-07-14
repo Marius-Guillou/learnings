@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import simpson
+from scipy.integrate import quad
 
 # Définition des paramètres
 pi = 3.14159
@@ -30,10 +31,11 @@ def c(r, R):  # Corde variable linéairement
     c_bout = 0.04
     return c_racine + (c_bout - c_racine) * r / R
 
-def Cz(alpha):  # Cz réaliste pour NACA 0012
+def Cz(alpha): #Approximation au premier ordre, renvoi 0 si alpha < 0
     Cz_max = 1.1
     Cz_lin = 2 * pi * alpha
-    return np.clip(Cz_lin, -Cz_max, Cz_max)
+    Cz_positive = np.where(Cz_lin > 0, Cz_lin, 0)
+    return np.clip(Cz_positive, 0, Cz_max)
 
 # Élément de pale
 def Poussee_elmt(r, R, Omega, Vi):
@@ -113,3 +115,54 @@ print("Poussée totale =", F_totale,"N", "Couple total =", C_total, "N.m", "vite
 
 #Dissymétrie de poussée en avancement
 V_avan = 20
+
+def coef_occupation_disque(R):
+    integrand = lambda r: c(r, R)
+    surface_pale, _ = quad(integrand, 0, R)  # intégrale de c(r) dr
+    surface_pales = Nb * surface_pale  # Nb pales
+    surface_disque = np.pi * R**2
+    k = surface_pales / surface_disque
+    return k
+
+# Fonction de portance élémentaire avec vent d'avancement
+def delta_moment_dissymetrie(R, Omega, V_avan, N_r=200, N_phi=200):
+    r_vals = np.linspace(0.01 * R, R, N_r)
+    phi_vals = np.linspace(0, 2*pi, N_phi)
+    dphi = 2 * pi / N_phi
+    moment_total = 0
+
+    for phi in phi_vals:
+        Vt = Omega * r_vals
+        Vx = V_avan * np.sin(phi)
+        
+        Vrel_with = np.sqrt(Vt**2 + Vx**2)
+        Beta_with = np.arctan2(Vx, Vt)
+        alpha_with = Theta(r_vals, R) - Beta_with
+        dF_with = 0.5 * rho * c(r_vals, R) * Vrel_with**2 * Cz(alpha_with)
+        
+        Vrel_no = Vt
+        Beta_no = 0
+        alpha_no = Theta(r_vals, R)
+        dF_no = 0.5 * rho * c(r_vals, R) * Vrel_no**2 * Cz(alpha_no)
+
+        dF_delta = dF_with - dF_no
+        dM = dF_delta * r_vals * np.sin(phi)
+        moment_total += simpson(dM, r_vals) * dphi
+
+    k_val = coef_occupation_disque(0.75)
+    return  k_val*moment_total
+
+# Calcul pour une gamme de vitesses
+V_range = np.linspace(0, 40, 100)
+moments = [delta_moment_dissymetrie(R_test, Omega_val, V) for V in V_range]
+
+# Affichage
+plt.figure(figsize=(10, 6))
+plt.plot(V_range, moments, label="Moment de dissymétrie par delta de portance", linewidth=2)
+plt.xlabel("Vitesse d'avancement V (m/s)")
+plt.ylabel("Moment transversal (N·m)")
+plt.title("Moment de dissymétrie (delta de portance) vs vitesse d'avancement")
+plt.grid(True, linestyle=':')
+plt.legend()
+plt.tight_layout()
+plt.show()
